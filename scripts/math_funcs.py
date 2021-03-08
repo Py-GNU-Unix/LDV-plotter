@@ -20,6 +20,6 @@ cos = math.cos
 
 
 
-del __builtins__, math, __cached__, \
-    __doc__, __file__, __loader__,  \
-    __name__, __package__, __spec__ \
+del __builtins__, math, __cached__
+del __doc__, __file__, __loader__
+del __name__, __package__, __spec__

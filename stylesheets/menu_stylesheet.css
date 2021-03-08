@@ -1,0 +1,10 @@
+QMenu {
+    border: 1px groove lightgray;
+}
+
+QMenu::item {}
+
+QMenu::item::selected {
+    color: white;
+    background:rgb(61,174,233);
+}

@@ -37,7 +37,7 @@ class AppFunc(QtWidgets.QHBoxLayout):
         self.addWidget(self.close_button)
 
     def delete(self):
-        self.master.funcs.remove(self)
+        self.master.app_funcs.remove(self)
         self.delete_widgets()
         self.master.update_funcs_names()
 
@@ -87,9 +87,10 @@ class MainLayout(QtWidgets.QGridLayout):
     def create_widgets(self):
         self.right_layout = RightLayout(self.parent)
         self.matplot_layout = MatplotLayout(self.parent)
-
+        self.menu = MainMenu(self.parent)
 
     def add_widgets(self):
+        self.addWidget(self.menu, 0, 0)
         self.addLayout(self.matplot_layout, 1, 0)
         self.addLayout(self.right_layout, 1, 1)
 
@@ -214,6 +215,27 @@ class ToolsLayout(QtWidgets.QFormLayout):
         end = start + (step*n_points)
         self.x_end.setValue(end)
 
+class MainMenu(QtWidgets.QMenuBar):
+    def __init__(self, main_window):
+        QtWidgets.QMenuBar.__init__(self)
+        self.main_window = main_window
+        self.setupStyleSheet()
+        self.createFileMenu()
+
+    def createFileMenu(self):
+        files = self.addMenu("Files")
+        files.addAction("New")
+        files.addAction("Open")
+        files.addAction("Save")
+        files.addAction("Save as")
+        files.addSeparator()
+        files.addAction("Quit")
+        files.setStyleSheet(self.css)
+
+
+    def setupStyleSheet(self):
+        self.css = open("../stylesheets/menu_stylesheet.css", "r").read()
+
 class MainWindow(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
@@ -221,7 +243,13 @@ class MainWindow(QtWidgets.QWidget):
         self.setup_layout()
 
     def setup_win_style(self):
-        self.setWindowIcon(QtGui.QIcon('../images/icon.png'))
+        icon = QtGui.QIcon()
+        #icon.addFile('../images/icon.png', QtCore.QSize(128, 128))
+        icon.addFile('../images/icon.png_64x64', QtCore.QSize(64, 64))
+        icon.addFile('../images/icon.png_32x32', QtCore.QSize(32, 32))
+        icon.addFile('../images/icon.png_16x16', QtCore.QSize(16, 16))
+        self.setWindowIcon(icon)
+        
         css = open("../stylesheets/window_stylesheet.css", "r").read()
         self.setStyleSheet(css)
 
