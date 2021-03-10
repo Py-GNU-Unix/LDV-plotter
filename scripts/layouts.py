@@ -1,4 +1,5 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+import sys
+from PySide2 import QtWidgets, QtCore, QtGui
 import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -37,7 +38,7 @@ class MainLayout(QtWidgets.QGridLayout):
         self.menu = MainMenu(self.parent)
 
     def add_widgets(self):
-        self.addWidget(self.menu, 0, 0)
+        self.addWidget(self.menu, 0, 0, 1, 2)
         self.addLayout(self.matplot_layout, 1, 0)
         self.addLayout(self.right_layout, 1, 1)
 
@@ -55,27 +56,36 @@ class MainLayout(QtWidgets.QGridLayout):
         end = self.right_layout.tools.x_end.value()
         step = self.right_layout.tools.x_step.value()
         return (start, end, step)
-
+        
 class MainMenu(QtWidgets.QMenuBar):
     def __init__(self, main_window):
-        QtWidgets.QMenuBar.__init__(self)
+        QtWidgets.QMenuBar.__init__(self, main_window)
         self.main_window = main_window
-        self.setupStyleSheet()
-        self.createFileMenu()
-
-    def createFileMenu(self):
-        files = self.addMenu("Files")
-        files.addAction("New")
-        files.addAction("Open")
-        files.addAction("Save")
-        files.addAction("Save as")
-        files.addSeparator()
-        files.addAction("Quit")
-        files.setStyleSheet(self.css)
-
-
-    def setupStyleSheet(self):
-        self.css = open("../stylesheets/menu_stylesheet.css", "r").read()
+        
+        self.create_actions()
+        self.connect_actions()
+        self.add_actions()
+    
+    def create_actions(self):
+        self.new_action = QtWidgets.QAction("New")
+        self.open_action = QtWidgets.QAction("Open")
+        self.save_action = QtWidgets.QAction("Save")
+        self.save_as_action = QtWidgets.QAction("Save as")
+        self.quit_action = QtWidgets.QAction("Quit")
+    
+    def connect_actions(self):
+        self.new_action.triggered.connect(lambda: self.main_window.new_file())
+        self.open_action.triggered.connect(self.main_window.open_file)
+        self.save_action.triggered.connect(self.main_window.save_file)
+        self.save_as_action.triggered.connect(self.main_window.save_file_as)
+        self.quit_action.triggered.connect(lambda: sys.exit(0))
+        
+    def add_actions(self):
+        self.addAction(self.new_action)
+        self.addAction(self.open_action)
+        self.addAction(self.save_action)
+        self.addAction(self.save_as_action)       
+        self.addAction(self.quit_action)
 
 class MatplotLayout(VerticalCostumLayout):
     def create_widgets(self):
