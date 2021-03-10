@@ -13,14 +13,17 @@ class VerticalCostumLayout(QtWidgets.QVBoxLayout):
 
     def config(self):
         self.create_widgets()
+        self.configure_widgets()
         self.add_widgets()
 
     def create_widgets(self):
         raise NotImplementedError
-
+    
+    def configure_widgets(self):
+        raise NotImplementedError
+        
     def add_widgets(self):
         raise NotImplementedError
-
 
 class MainLayout(QtWidgets.QGridLayout):
     def __init__(self, parent):
@@ -87,14 +90,15 @@ class MainMenu(QtWidgets.QMenuBar):
         self.addAction(self.save_as_action)       
         self.addAction(self.quit_action)
 
-class MatplotLayout(VerticalCostumLayout):
+class MatplotLayout(VerticalCostumLayout):   
     def create_widgets(self):
         self.plt_figure = plt.figure()
-        plt.xlabel("x")
-        plt.ylabel("y")
-
         self.canvas = FigureCanvas(self.plt_figure)
         self.toolbar = NavigationToolbar(self.canvas, self.parent)
+    
+    def configure_widgets(self):
+        plt.xlabel("x")
+        plt.ylabel("y")  
 
     def add_widgets(self):
         self.addWidget(self.toolbar)
@@ -104,8 +108,9 @@ class RightLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.tools = ToolsLayout(self.parent)
         self.funcs = AppFuncsLayout()
-
         self.plot_button = QtWidgets.QPushButton('Plot')
+    
+    def configure_widgets(self):
         self.plot_button.clicked.connect(self.parent.plot)
         shortcut = QtWidgets.QShortcut('Return', self.plot_button)
         shortcut.activated.connect(self.parent.plot)
@@ -114,7 +119,6 @@ class RightLayout(VerticalCostumLayout):
         self.addLayout(self.tools)
         self.addStretch()
         self.addLayout(self.funcs)
-
         self.addWidget(self.plot_button)
         
 class AppFuncsLayout(QtWidgets.QVBoxLayout):
@@ -145,25 +149,34 @@ class ToolsLayout(QtWidgets.QFormLayout):
         self.config()
 
     def create_x_tools(self):
+        self.create_x_start()
+        self.create_x_end()
+        self.create_x_step()
+        self.create_points_range()
+    
+    def create_x_start(self):
         self.x_start = QtWidgets.QDoubleSpinBox()
         self.x_start.setRange(-2147483647, 2147483647)
-        self.x_start.setDecimals(5)
-
+        self.x_start.setDecimals(5) 
+    
+    def create_x_end(self):
         self.x_end = QtWidgets.QDoubleSpinBox()
         self.x_end.setRange(-2147483647, 2147483647)
         self.x_end.setValue(100)
         self.x_end.setDecimals(5)
 
+    def create_x_step(self):
         self.x_step = QtWidgets.QDoubleSpinBox()
         self.x_step.setRange(-2147483647, 2147483647)
         self.x_step.setValue(0.1)
         self.x_step.setDecimals(5)
-
+    
+    def create_points_range(self):
         self.points_range = QtWidgets.QSpinBox()
         self.points_range.setRange(0, 2147483647)
         self.points_range.setValue(1)
-        self.points_range.setStyleSheet("height: 40;")
-
+        self.points_range.setStyleSheet("height: 40;")        
+        
     def create_x_tools_labels(self):
         self.x_start_label = QtWidgets.QLabel("x starts at")
         self.x_end_label = QtWidgets.QLabel("x ends at")
@@ -173,7 +186,7 @@ class ToolsLayout(QtWidgets.QFormLayout):
 
     def create_new_func_button(self):
         self.new_func_button = QtWidgets.QPushButton('New Func')
-        self.new_func_button.clicked.connect(self.parent.add_new_func)
+        self.new_func_button.clicked.connect(self.parent.create_new_func)
 
     def config(self):
         l = (

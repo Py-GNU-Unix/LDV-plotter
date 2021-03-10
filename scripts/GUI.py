@@ -8,6 +8,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from layouts import MainLayout
 
+os.chdir(os.path.dirname(__file__))
+
 class NoStepsError(Exception): pass
 
 FUNCS_EXECUTION_ERRORS = (
@@ -21,12 +23,26 @@ class AppFunc(QtWidgets.QHBoxLayout):
         QtWidgets.QHBoxLayout.__init__(self)
         self.name = name
         self.master = master
-        self.entry = QtWidgets.QLineEdit()
-        self.entry.setFocusPolicy(QtCore.Qt.StrongFocus)
-        self.entry_doc = QtWidgets.QLabel(f"{name} = ")
-        self.create_close_button()
         self.configure()
 
+    def configure(self):
+        self.create_widgets()
+        self.add_widgets()
+        self.set_focus_policy()
+
+    def add_widgets(self):
+        self.addWidget(self.entry_doc)
+        self.addWidget(self.entry)
+        self.addWidget(self.close_button)   
+        
+    def set_focus_policy(self):
+        self.entry.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+    def create_widgets(self):
+        self.entry = QtWidgets.QLineEdit()
+        self.entry_doc = QtWidgets.QLabel(f"{self.name} = ")
+        self.create_close_button() 
+        
     def create_close_button(self):
         self.close_button = QtWidgets.QPushButton("X")
         self.close_button.clicked.connect(self.delete)
@@ -34,39 +50,31 @@ class AppFunc(QtWidgets.QHBoxLayout):
         css = open("../stylesheets/close_button_stylesheet.css","r").read()
         self.close_button.setStyleSheet(css)
 
-    def configure(self):
-        self.addWidget(self.entry_doc)
-        self.addWidget(self.entry)
-        self.addWidget(self.close_button)
-
     def delete(self):
-        self.master.app_funcs.remove(self)
-        self.delete_widgets()
+        self.master.remove_from_app_funcs_list(self)
         self.master.update_funcs_names()
+        self.delete_widgets()
 
     def delete_widgets(self):
         self.entry.deleteLater()
         self.entry_doc.deleteLater()
         self.close_button.deleteLater()
 
+    def focus(self):
+        self.entry.setFocus()
+        
     def set_name(self, name):
         self.name = name
         self.entry_doc.setText(f"{name} = ")
-    
-    def get_name(self):
-        return self.name
-
-    def get_layout(self):
-        return self.layout
-
-    def get_text(self):
-        return self.entry.text()
 
     def set_text(self, text):
         self.entry.setText(text)
-    
-    def focus(self):
-        self.entry.setFocus()
+        
+    def get_name(self):
+        return self.name
+
+    def get_text(self):
+        return self.entry.text()
 
 class MainWindow(QtWidgets.QWidget):
     def __init__(self, filename=None):
@@ -74,16 +82,7 @@ class MainWindow(QtWidgets.QWidget):
         self.set_filename(filename)
         self.setup_win_style()
         self.setup_layout()
-        self.setup_file()
-
-    def setup_win_style(self):
-        icon = QtGui.QIcon("../images/icon.png")
-        self.setWindowIcon(icon)
-        
-        self.setAutoFillBackground(True)
-        palette = QtGui.QPalette()
-        palette.setColor(self.backgroundRole(), "white");
-        self.setPalette(palette)
+        self.setup_file()      
 
     def setup_layout(self):
         self.app_funcs = []
@@ -95,95 +94,93 @@ class MainWindow(QtWidgets.QWidget):
             self.new_file(alert=False)
         else:
             self.open_file(self.filename)
+
+    def setup_win_style(self):
+        self.setup_win_icon()
+        self.setup_palette()
+    
+    def setup_win_icon(self):
+        icon = QtGui.QIcon("../images/icon.png")
+        self.setWindowIcon(icon)   
+    
+    def setup_palette(self):
+        self.setAutoFillBackground(True)
+        palette = QtGui.QPalette()
+        palette.setColor(self.backgroundRole(), "white");
+        self.setPalette(palette) 
     
     def new_file(self, alert=True):
         self.set_filename(None)
-        self.clear_funcs()
-        self.add_new_func()
-        
-        if alert:
-            self.alert_new_file()
+        self.clear_app_funcs()
+        self.create_new_func()
     
     def open_file(self, filename=None):
-        if filename:
-            self.set_filename(filename)
-        else:
-            f = QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0] 
-            
-            if not f: return 0
+        if not filename:
+            filename = QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0] 
+            if not filename: return 0
         
-            self.set_filename(f)
+        self.set_filename(filename)
+        self.clear_app_funcs()
+        self.parse_file()
         
-        self.clear_funcs()
-        
+    def parse_file(self):
         try:
-            for line in open(self.filename):
-                name = line.split("=")[0].strip()
-                context = line.split("=")[1].strip()
-                self.add_new_func(name, context)
+            file = open(self.filename)
+            for line in file:
+                self.parse_file_line(line)
+                    
         except IndexError:
+            file.close()
             self.alert_invalid_file(line)
+    
+    def parse_file_line(self, line):
+        name = line.split("=")[0].strip()
+        context = line.split("=")[1].strip()
+        self.create_new_func(name, context)
+
+    def alert_invalid_file(self, line):
+        alrt = QtWidgets.QMessageBox()
+        alrt.setWindowTitle("Failed to open the file")
+        alrt.setText(f"The file is invalid:\n{line}")
+        alrt.exec_() 
     
     def save_file(self):
         if not self.filename:
             self.save_file_as()
             return 0
         
+        context = self.read_app_funcs_context()
+        
+        with open(self.filename, "w") as file:
+            file.write(context)
+
+    def read_app_funcs_context(self):
         context = ""
         for foo in self.get_funcs():
             context += foo.get_name() + "=" + foo.get_text() + "\n"
         
-        with open(self.filename, "w") as file:
-            file.write(context)
+        return context
     
     def save_file_as(self, filename=None):
         if not filename:
-            f = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')[0]
-            
-            if not f: return 0
-            self.set_filename(f)
-        else:
-            self.filename = filename
-            
+            filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')[0]
+            if not filename: return 0
+        
+        self.set_filename(filename)
         self.save_file()
         
     def create_x(self):
         start, end, step = self.main_layout.get_x_range()
-        count = start
 
         if not step:
             raise NoStepsError
-
+        
+        count = start
+        
+        # Count from start to end
         while end-count > step/2:
             yield count
             count += step
-
-    def get_funcs(self):
-        return self.app_funcs
-
-    def alert_failed_func(self, app_func, error):
-        alrt = QtWidgets.QMessageBox()
-        alrt.setWindowTitle("Failed to evaluate the expression")
-        alrt.setText(f"Your expression is wrong:\n in app_func {app_func.name}:\n {error}")
-        alrt.exec_()
-    
-    def alert_invalid_file(self, line):
-        alrt = QtWidgets.QMessageBox()
-        alrt.setWindowTitle("Failed to open the file")
-        alrt.setText(f"The file is invalid:\n{line}")
-        alrt.exec_()        
-        
-    def alert_new_file(self):
-        alrt = QtWidgets.QMessageBox()
-        alrt.setWindowTitle("New file created")
-        alrt.setText("  You created a new file  ")
-        alrt.exec_()
-
-
-    def update_canvas(self):
-        plt.xlabel("x")
-        plt.ylabel("y")
-        self.main_layout.matplot_layout.canvas.draw()
 
     def plot(self):
         self.main_layout.clear_plt()
@@ -205,7 +202,18 @@ class MainWindow(QtWidgets.QWidget):
 
         self.update_canvas()
 
-    def add_new_func(self, name="", context=""):
+    def alert_failed_func(self, app_func, error):
+        alrt = QtWidgets.QMessageBox()
+        alrt.setWindowTitle("Failed to evaluate the expression")
+        alrt.setText(f"Your expression is wrong:\n in app_func {app_func.name}:\n {error}")
+        alrt.exec_()
+
+    def update_canvas(self):
+        plt.xlabel("x")
+        plt.ylabel("y")
+        self.main_layout.matplot_layout.canvas.draw()
+        
+    def create_new_func(self, name="", context=""):
         if not name:
             name = f"f{len(self.app_funcs)+1}(x)"
 
@@ -215,35 +223,39 @@ class MainWindow(QtWidgets.QWidget):
         self.app_funcs.append(func)
         func.focus()
 
-    def delete_func(self, foo):
-        foo.delete()
-    
-    def clear_funcs(self):
+    def clear_app_funcs(self):
         for f in self.get_funcs()[:]:
             self.delete_func(f)
+            
+    def delete_func(self, foo):
+        foo.delete()
+
+    def get_funcs(self):
+        return self.app_funcs
 
     def update_funcs_names(self):
-        count = 0
-        for f in self.app_funcs:
-            count += 1
-            name = f"f{count}(x)"
+        for count, f in enumerate(self.app_funcs):
+            name = f"f{count+1}(x)"
             f.set_name(name)
     
-    def set_filename(self, new):
-        self.filename = new
-        
-        if new == None:
-            new = "untiteld"
+    def remove_from_app_funcs_list(self, app_func):
+        self.app_funcs.remove(app_func)
+
+    def set_filename(self, new_filename):
+        self.filename = new_filename
+        self.set_title_from_filename(new_filename)
+    
+    def set_title_from_filename(self, filename):
+        if not filename:
+            filename = "untiteld"
+            
         else:
-            new = os.path.split(new)[-1]
+            filename = os.path.split(filename)[-1]
         
-        new += " - LDV-plt"
+        filename += "  -  LDV-plt"
+        self.setWindowTitle(filename)  
         
-        self.setWindowTitle(new)
-        
-
 app = QtWidgets.QApplication(sys.argv)
-
-x = MainWindow()
-x.show()
+win = MainWindow()
+win.show()
 sys.exit(app.exec_())
