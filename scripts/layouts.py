@@ -175,14 +175,14 @@ class ToolsLayout(QtWidgets.QFormLayout):
         self.points_range = QtWidgets.QSpinBox()
         self.points_range.setRange(0, 2147483647)
         self.points_range.setValue(1)
-        self.points_range.setStyleSheet("height: 40;")        
+        self.points_range.setStyleSheet("height: 40;")  
+        self.points_range.valueChanged.connect(self.set_num_points)
         
     def create_x_tools_labels(self):
         self.x_start_label = QtWidgets.QLabel("x starts at")
         self.x_end_label = QtWidgets.QLabel("x ends at")
         self.x_step_label = QtWidgets.QLabel("steps are of")
-        self.points_range_label = QtWidgets.QPushButton("set the №\nof points")
-        self.points_range_label.clicked.connect(self.set_num_points)
+        self.points_range_label = QtWidgets.QLabel("set the №\nof points")
 
     def create_new_func_button(self):
         self.new_func_button = QtWidgets.QPushButton('New Func')
