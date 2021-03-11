@@ -189,12 +189,11 @@ class ToolsLayout(QtWidgets.QFormLayout):
         self.new_func_button.clicked.connect(self.parent.create_new_func)
 
     def config(self):
-        l = (
-            (self.x_end_label, self.x_end),
-            (self.x_start_label, self.x_start),
-            (self.x_step_label, self.x_step),
-            (self.points_range_label, self.points_range),
-            (QtWidgets.QWidget(), self.new_func_button))
+        l = ((self.x_end_label, self.x_end),
+             (self.x_start_label, self.x_start),
+             (self.x_step_label, self.x_step),
+             (self.points_range_label, self.points_range),
+             (QtWidgets.QWidget(), self.new_func_button))
 
         for label, effective in l:
             self.addRow(label, effective)
