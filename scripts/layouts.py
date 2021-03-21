@@ -5,25 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-class VerticalCostumLayout(QtWidgets.QVBoxLayout):
-    def __init__(self, parent):
-        QtWidgets.QVBoxLayout.__init__(self)
-        self.parent = parent
-        self.config()
-
-    def config(self):
-        self.create_widgets()
-        self.configure_widgets()
-        self.add_widgets()
-
-    def create_widgets(self):
-        raise NotImplementedError
-    
-    def configure_widgets(self):
-        raise NotImplementedError
-        
-    def add_widgets(self):
-        raise NotImplementedError
+from costum_widgets import VerticalCostumLayout, CostumEntry
 
 class MainLayout(QtWidgets.QGridLayout):
     def __init__(self, parent):
@@ -57,8 +39,18 @@ class MainLayout(QtWidgets.QGridLayout):
     def get_x_range(self):
         start = self.right_layout.tools.x_start.value()
         end = self.right_layout.tools.x_end.value()
-        step = self.right_layout.tools.x_step.value()
+        step = float(self.right_layout.tools.x_step.text())
         return (start, end, step)
+    
+    def reset_ui(self):
+        self.right_layout.tools.reset_ui()
+        self.clear_plt()
+        self.update_canvas()
+        
+    def update_canvas(self):
+        plt.xlabel("x")
+        plt.ylabel("y")
+        self.matplot_layout.canvas.draw()
         
 class MainMenu(QtWidgets.QMenuBar):
     def __init__(self, main_window):
@@ -107,7 +99,7 @@ class MatplotLayout(VerticalCostumLayout):
 class RightLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.tools = ToolsLayout(self.parent)
-        self.funcs = AppFuncsLayout()
+        self.funcs = AppFuncsScroll()
         self.plot_button = QtWidgets.QPushButton('Plot')
     
     def configure_widgets(self):
@@ -117,8 +109,7 @@ class RightLayout(VerticalCostumLayout):
 
     def add_widgets(self):
         self.addLayout(self.tools)
-        self.addStretch()
-        self.addLayout(self.funcs)
+        self.addWidget(self.funcs)
         self.addWidget(self.plot_button)
         
 class AppFuncsLayout(QtWidgets.QVBoxLayout):
@@ -138,6 +129,19 @@ class AppFuncsLayout(QtWidgets.QVBoxLayout):
         app_func.delete()
         self.removeWidget(app_func)
 
+class AppFuncsScroll(QtWidgets.QScrollArea):
+    def __init__(self):
+        QtWidgets.QScrollArea.__init__(self)
+        self.layout = AppFuncsLayout()
+        self.main_widget = QtWidgets.QWidget()
+        self.main_widget.setLayout(self.layout)
+
+        self.setWidgetResizable(True)
+        self.setWidget(self.main_widget)
+    
+    def __getattr__(self, attrname):
+        return getattr(self.layout, attrname)
+    
 class ToolsLayout(QtWidgets.QFormLayout):
     def __init__(self, parent):
         QtWidgets.QFormLayout.__init__(self)
@@ -158,51 +162,64 @@ class ToolsLayout(QtWidgets.QFormLayout):
         self.x_start = QtWidgets.QDoubleSpinBox()
         self.x_start.setRange(-2147483647, 2147483647)
         self.x_start.setDecimals(5) 
+        self.x_start.valueChanged.connect(self.set_num_step)
+        
     
     def create_x_end(self):
         self.x_end = QtWidgets.QDoubleSpinBox()
         self.x_end.setRange(-2147483647, 2147483647)
         self.x_end.setValue(100)
         self.x_end.setDecimals(5)
+        self.x_end.valueChanged.connect(self.set_num_step)
 
     def create_x_step(self):
-        self.x_step = QtWidgets.QDoubleSpinBox()
-        self.x_step.setRange(-2147483647, 2147483647)
-        self.x_step.setValue(0.1)
-        self.x_step.setDecimals(5)
+        self.x_step = CostumEntry(0.1)
     
     def create_points_range(self):
         self.points_range = QtWidgets.QSpinBox()
         self.points_range.setRange(0, 2147483647)
-        self.points_range.setValue(1)
+        self.points_range.setValue(1000)
         self.points_range.setStyleSheet("height: 40;")  
-        self.points_range.valueChanged.connect(self.set_num_points)
+        self.points_range.valueChanged.connect(self.set_num_step)
         
     def create_x_tools_labels(self):
         self.x_start_label = QtWidgets.QLabel("x starts at")
         self.x_end_label = QtWidgets.QLabel("x ends at")
         self.x_step_label = QtWidgets.QLabel("steps are of")
         self.points_range_label = QtWidgets.QLabel("set the №\nof points")
+        
 
     def create_new_func_button(self):
         self.new_func_button = QtWidgets.QPushButton('New Func')
         self.new_func_button.clicked.connect(self.parent.create_new_func)
 
     def config(self):
-        l = ((self.x_end_label, self.x_end),
-             (self.x_start_label, self.x_start),
-             (self.x_step_label, self.x_step),
+        l = ((self.x_start_label, self.x_start),
+             (self.x_end_label, self.x_end),
              (self.points_range_label, self.points_range),
+             (self.x_step_label, self.x_step),
              (QtWidgets.QWidget(), self.new_func_button))
 
         for label, effective in l:
             self.addRow(label, effective)
 
-    def set_num_points(self):
+    def set_num_step(self):
         start = self.x_start.value()
-        step = self.x_step.value()
+        end = self.x_end.value()
         n_points = self.points_range.value()
+        
+        if n_points == 0:
+            self.points_range.setValue(1)
+            return 1
+    
+        step = (end - start)/n_points
+        self.x_step.setValue(step)
+    
+    def reset_ui(self):
+        self.x_start.setValue(0)
+        self.x_end.setValue(100)
+        self.x_step.setValue(0.1)
+        self.points_range.setValue(1000)
+        
 
-        end = start + (step*n_points)
-        self.x_end.setValue(end)
 

@@ -1,12 +1,14 @@
-import sys
-import func_generator
-from PySide2 import QtWidgets, QtCore, QtGui
-import matplotlib.pyplot as plt
 import os
+import sys
+import matplotlib.pyplot as plt
 
+from PySide2 import QtWidgets, QtCore, QtGui
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
 from layouts import MainLayout
+from costum_widgets import AppFunc
+import func_generator
 
 os.chdir(os.path.dirname(__file__))
 
@@ -17,64 +19,6 @@ FUNCS_EXECUTION_ERRORS = (
     SyntaxError,
     NameError,
     NoStepsError)
-
-class AppFunc(QtWidgets.QHBoxLayout):
-    def __init__(self, name, master):
-        QtWidgets.QHBoxLayout.__init__(self)
-        self.name = name
-        self.master = master
-        self.configure()
-
-    def configure(self):
-        self.create_widgets()
-        self.add_widgets()
-        self.set_focus_policy()
-
-    def add_widgets(self):
-        self.addWidget(self.entry_doc)
-        self.addWidget(self.entry)
-        self.addWidget(self.close_button)   
-        
-    def set_focus_policy(self):
-        self.entry.setFocusPolicy(QtCore.Qt.StrongFocus)
-
-    def create_widgets(self):
-        self.entry = QtWidgets.QLineEdit()
-        self.entry_doc = QtWidgets.QLabel(f"{self.name} = ")
-        self.create_close_button() 
-        
-    def create_close_button(self):
-        self.close_button = QtWidgets.QPushButton("X")
-        self.close_button.clicked.connect(self.delete)
-
-        css = open("../stylesheets/close_button_stylesheet.css","r").read()
-        self.close_button.setStyleSheet(css)
-
-    def delete(self):
-        self.master.remove_from_app_funcs_list(self)
-        self.master.update_funcs_names()
-        self.delete_widgets()
-
-    def delete_widgets(self):
-        self.entry.deleteLater()
-        self.entry_doc.deleteLater()
-        self.close_button.deleteLater()
-
-    def focus(self):
-        self.entry.setFocus()
-        
-    def set_name(self, name):
-        self.name = name
-        self.entry_doc.setText(f"{name} = ")
-
-    def set_text(self, text):
-        self.entry.setText(text)
-        
-    def get_name(self):
-        return self.name
-
-    def get_text(self):
-        return self.entry.text()
 
 class MainWindow(QtWidgets.QWidget):
     def __init__(self, filename=None):
@@ -91,7 +35,7 @@ class MainWindow(QtWidgets.QWidget):
 
     def setup_file(self):
         if not self.filename:
-            self.new_file(alert=False)
+            self.create_new_func()
         else:
             self.open_file(self.filename)
 
@@ -109,7 +53,8 @@ class MainWindow(QtWidgets.QWidget):
         palette.setColor(self.backgroundRole(), "white");
         self.setPalette(palette) 
     
-    def new_file(self, alert=True):
+    def new_file(self):
+        self.main_layout.reset_ui()
         self.set_filename(None)
         self.clear_app_funcs()
         self.create_new_func()
@@ -119,6 +64,7 @@ class MainWindow(QtWidgets.QWidget):
             filename = QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0] 
             if not filename: return 0
         
+        self.main_layout.reset_ui()
         self.set_filename(filename)
         self.clear_app_funcs()
         self.parse_file()
@@ -171,14 +117,10 @@ class MainWindow(QtWidgets.QWidget):
         
     def create_x(self):
         start, end, step = self.main_layout.get_x_range()
-
-        if not step:
-            raise NoStepsError
-        
         count = start
         
         # Count from start to end
-        while end-count > step/2:
+        while abs(count) < abs(end + step/2):
             yield count
             count += step
 
@@ -198,20 +140,15 @@ class MainWindow(QtWidgets.QWidget):
                 self.alert_failed_func(app_func, error)
 
             else:
-                ax.plot(list(self.create_x()), data, '.-')
+                ax.plot(list(self.create_x()), data)
 
-        self.update_canvas()
+        self.main_layout.update_canvas()
 
     def alert_failed_func(self, app_func, error):
         alrt = QtWidgets.QMessageBox()
         alrt.setWindowTitle("Failed to evaluate the expression")
         alrt.setText(f"Your expression is wrong:\n in app_func {app_func.name}:\n {error}")
         alrt.exec_()
-
-    def update_canvas(self):
-        plt.xlabel("x")
-        plt.ylabel("y")
-        self.main_layout.matplot_layout.canvas.draw()
         
     def create_new_func(self, name="", context=""):
         if not name:
@@ -254,6 +191,7 @@ class MainWindow(QtWidgets.QWidget):
         
         filename += "  -  LDV-plt"
         self.setWindowTitle(filename)  
+
         
 app = QtWidgets.QApplication(sys.argv)
 win = MainWindow()
