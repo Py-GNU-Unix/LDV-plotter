@@ -99,7 +99,7 @@ class MatplotLayout(VerticalCostumLayout):
 class RightLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.tools = ToolsLayout(self.parent)
-        self.funcs = AppFuncsScroll()
+        self.funcs = AppFuncsLayout()
         self.plot_button = QtWidgets.QPushButton('Plot')
     
     def configure_widgets(self):
@@ -109,7 +109,7 @@ class RightLayout(VerticalCostumLayout):
 
     def add_widgets(self):
         self.addLayout(self.tools)
-        self.addWidget(self.funcs)
+        self.addLayout(self.funcs)
         self.addWidget(self.plot_button)
         
 class AppFuncsLayout(QtWidgets.QVBoxLayout):
@@ -128,19 +128,6 @@ class AppFuncsLayout(QtWidgets.QVBoxLayout):
     def remove_app_func(self, app_func):
         app_func.delete()
         self.removeWidget(app_func)
-
-class AppFuncsScroll(QtWidgets.QScrollArea):
-    def __init__(self):
-        QtWidgets.QScrollArea.__init__(self)
-        self.layout = AppFuncsLayout()
-        self.main_widget = QtWidgets.QWidget()
-        self.main_widget.setLayout(self.layout)
-
-        self.setWidgetResizable(True)
-        self.setWidget(self.main_widget)
-    
-    def __getattr__(self, attrname):
-        return getattr(self.layout, attrname)
     
 class ToolsLayout(QtWidgets.QFormLayout):
     def __init__(self, parent):
