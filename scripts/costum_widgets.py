@@ -1,5 +1,35 @@
 from PySide2 import QtWidgets, QtCore, QtGui
 
+class MainMenu(QtWidgets.QMenuBar):
+    def __init__(self, main_window):
+        QtWidgets.QMenuBar.__init__(self, main_window)
+        self.main_window = main_window
+        
+        self.create_actions()
+        self.connect_actions()
+        self.add_actions()
+    
+    def create_actions(self):
+        self.new_action = QtWidgets.QAction("New")
+        self.open_action = QtWidgets.QAction("Open")
+        self.save_action = QtWidgets.QAction("Save")
+        self.save_as_action = QtWidgets.QAction("Save as")
+        self.quit_action = QtWidgets.QAction("Quit")
+    
+    def connect_actions(self):
+        self.new_action.triggered.connect(lambda: self.main_window.new_file())
+        self.open_action.triggered.connect(self.main_window.open_file)
+        self.save_action.triggered.connect(self.main_window.save_file)
+        self.save_as_action.triggered.connect(self.main_window.save_file_as)
+        self.quit_action.triggered.connect(lambda: sys.exit(0))
+        
+    def add_actions(self):
+        self.addAction(self.new_action)
+        self.addAction(self.open_action)
+        self.addAction(self.save_action)
+        self.addAction(self.save_as_action)       
+        self.addAction(self.quit_action)
+        
 class VerticalCostumLayout(QtWidgets.QVBoxLayout):
     def __init__(self, parent):
         QtWidgets.QVBoxLayout.__init__(self)

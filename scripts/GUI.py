@@ -192,8 +192,8 @@ class MainWindow(QtWidgets.QWidget):
         filename += "  -  LDV-plt"
         self.setWindowTitle(filename)  
 
-        
-app = QtWidgets.QApplication(sys.argv)
-win = MainWindow()
-win.show()
-sys.exit(app.exec_())
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    win = MainWindow()
+    win.show()
+    sys.exit(app.exec_())

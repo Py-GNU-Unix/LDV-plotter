@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from costum_widgets import VerticalCostumLayout, CostumEntry
+from costum_widgets import VerticalCostumLayout, CostumEntry, MainMenu
 
 class MainLayout(QtWidgets.QGridLayout):
     def __init__(self, parent):
@@ -52,36 +52,6 @@ class MainLayout(QtWidgets.QGridLayout):
         plt.ylabel("y")
         self.matplot_layout.canvas.draw()
         
-class MainMenu(QtWidgets.QMenuBar):
-    def __init__(self, main_window):
-        QtWidgets.QMenuBar.__init__(self, main_window)
-        self.main_window = main_window
-        
-        self.create_actions()
-        self.connect_actions()
-        self.add_actions()
-    
-    def create_actions(self):
-        self.new_action = QtWidgets.QAction("New")
-        self.open_action = QtWidgets.QAction("Open")
-        self.save_action = QtWidgets.QAction("Save")
-        self.save_as_action = QtWidgets.QAction("Save as")
-        self.quit_action = QtWidgets.QAction("Quit")
-    
-    def connect_actions(self):
-        self.new_action.triggered.connect(lambda: self.main_window.new_file())
-        self.open_action.triggered.connect(self.main_window.open_file)
-        self.save_action.triggered.connect(self.main_window.save_file)
-        self.save_as_action.triggered.connect(self.main_window.save_file_as)
-        self.quit_action.triggered.connect(lambda: sys.exit(0))
-        
-    def add_actions(self):
-        self.addAction(self.new_action)
-        self.addAction(self.open_action)
-        self.addAction(self.save_action)
-        self.addAction(self.save_as_action)       
-        self.addAction(self.quit_action)
-
 class MatplotLayout(VerticalCostumLayout):   
     def create_widgets(self):
         self.plt_figure = plt.figure()
@@ -111,7 +81,7 @@ class RightLayout(VerticalCostumLayout):
         self.addLayout(self.tools)
         self.addLayout(self.funcs)
         self.addWidget(self.plot_button)
-        
+
 class AppFuncsLayout(QtWidgets.QVBoxLayout):
     def __init__(self, funcs=[]):
         QtWidgets.QVBoxLayout.__init__(self)
