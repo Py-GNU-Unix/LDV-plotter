@@ -40,12 +40,7 @@ class MainWindow(QtWidgets.QWidget):
             self.open_file(self.filename)
 
     def setup_win_style(self):
-        self.setup_win_icon()
         self.setup_palette()
-    
-    def setup_win_icon(self):
-        icon = QtGui.QIcon("../images/icon.png")
-        self.setWindowIcon(icon)   
     
     def setup_palette(self):
         self.setAutoFillBackground(True)
