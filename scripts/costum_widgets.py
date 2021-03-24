@@ -1,4 +1,5 @@
 from PySide2 import QtWidgets, QtCore, QtGui
+import sys
 
 class MainMenu(QtWidgets.QMenuBar):
     def __init__(self, main_window):

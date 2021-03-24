@@ -1,0 +1,2 @@
+#!/bin/bash
+/opt/LDV-plotter/venv/bin/python3 /opt/LDV-plotter/scripts/GUI.py

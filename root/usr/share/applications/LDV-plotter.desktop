@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=LDV-plotter
+Icon=/opt/LDV-plotter/images/icon.png
+Exec=/bin/ldv-plt
+Terminal=false
