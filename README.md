@@ -6,7 +6,7 @@ This is a mathematics functions plotter. With this tool you can create beautiful
 
 ### Example:
 
-![urprised your friends.](/home/luca/Pictures/ldv-plt.png)
+![Screenshot](./images/ldv-plt.png)
 
 In this example, i created a plot which contains two functions. They are:
 
