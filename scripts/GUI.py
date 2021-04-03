@@ -1,15 +1,15 @@
 #     This file is part of LDV-plotter.
-# 
+#
 #     LDV-plotter is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
-# 
+#
 #     LDV-plotter is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
-# 
+#
 #     You should have received a copy of the GNU General Public License
 #     along with LDV-plotter.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -25,7 +25,9 @@ from layouts import MainLayout
 from costum_widgets import AppFunc
 import func_generator
 
-os.chdir(os.path.dirname(__file__))
+from pathlib import Path
+home = str(Path.home())
+os.chdir(home)
 
 class NoStepsError(Exception): pass
 
@@ -41,7 +43,7 @@ class MainWindow(QtWidgets.QWidget):
         self.set_filename(filename)
         self.setup_win_style()
         self.setup_layout()
-        self.setup_file()      
+        self.setup_file()
 
     def setup_layout(self):
         self.app_funcs = []
@@ -57,43 +59,44 @@ class MainWindow(QtWidgets.QWidget):
     def setup_win_style(self):
         self.setup_win_icon()
         self.setup_palette()
-    
+
     def setup_win_icon(self):
-        icon = QtGui.QIcon("../images/icon.png")
-        self.setWindowIcon(icon)   
-    
+        installationfolder = os.path.dirname(os.path.dirname(__file__))
+        icon = QtGui.QIcon(f"{installationfolder}/images/icon.png")
+        self.setWindowIcon(icon)
+
     def setup_palette(self):
         self.setAutoFillBackground(True)
         palette = QtGui.QPalette()
         palette.setColor(self.backgroundRole(), "white");
-        self.setPalette(palette) 
-    
+        self.setPalette(palette)
+
     def new_file(self):
         self.main_layout.reset_ui()
         self.set_filename(None)
         self.clear_app_funcs()
         self.create_new_func()
-    
+
     def open_file(self, filename=None):
         if not filename:
-            filename = QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0] 
+            filename = QtWidgets.QFileDialog.getOpenFileName(self, "Open File")[0]
             if not filename: return 0
-        
+
         self.main_layout.reset_ui()
         self.set_filename(filename)
         self.clear_app_funcs()
         self.parse_file()
-        
+
     def parse_file(self):
         try:
             file = open(self.filename)
             for line in file:
                 self.parse_file_line(line)
-                    
+
         except IndexError:
             file.close()
             self.alert_invalid_file(line)
-    
+
     def parse_file_line(self, line):
         name = line.split("=")[0].strip()
         context = line.split("=")[1].strip()
@@ -103,15 +106,15 @@ class MainWindow(QtWidgets.QWidget):
         alrt = QtWidgets.QMessageBox()
         alrt.setWindowTitle("Failed to open the file")
         alrt.setText(f"The file is invalid:\n{line}")
-        alrt.exec_() 
-    
+        alrt.exec_()
+
     def save_file(self):
         if not self.filename:
             self.save_file_as()
             return 0
-        
+
         context = self.read_app_funcs_context()
-        
+
         with open(self.filename, "w") as file:
             file.write(context)
 
@@ -119,21 +122,21 @@ class MainWindow(QtWidgets.QWidget):
         context = ""
         for foo in self.get_funcs():
             context += foo.get_name() + "=" + foo.get_text() + "\n"
-        
+
         return context
-    
+
     def save_file_as(self, filename=None):
         if not filename:
             filename = QtWidgets.QFileDialog.getSaveFileName(self, 'Save File')[0]
             if not filename: return 0
-        
+
         self.set_filename(filename)
         self.save_file()
-        
+
     def create_x(self):
         start, end, step = self.main_layout.get_x_range()
         count = start
-        
+
         # Count from start to end
         while abs(count) < abs(end + step/2):
             yield count
@@ -164,7 +167,7 @@ class MainWindow(QtWidgets.QWidget):
         alrt.setWindowTitle("Failed to evaluate the expression")
         alrt.setText(f"Your expression is wrong:\n in app_func {app_func.name}:\n {error}")
         alrt.exec_()
-        
+
     def create_new_func(self, name="", context=""):
         if not name:
             name = f"f{len(self.app_funcs)+1}(x)"
@@ -178,7 +181,7 @@ class MainWindow(QtWidgets.QWidget):
     def clear_app_funcs(self):
         for f in self.get_funcs()[:]:
             self.delete_func(f)
-            
+
     def delete_func(self, foo):
         foo.delete()
 
@@ -189,23 +192,23 @@ class MainWindow(QtWidgets.QWidget):
         for count, f in enumerate(self.app_funcs):
             name = f"f{count+1}(x)"
             f.set_name(name)
-    
+
     def remove_from_app_funcs_list(self, app_func):
         self.app_funcs.remove(app_func)
 
     def set_filename(self, new_filename):
         self.filename = new_filename
         self.set_title_from_filename(new_filename)
-    
+
     def set_title_from_filename(self, filename):
         if not filename:
             filename = "untiteld"
-            
+
         else:
             filename = os.path.split(filename)[-1]
-        
+
         filename += "  -  LDV-plt"
-        self.setWindowTitle(filename)  
+        self.setWindowTitle(filename)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
