@@ -1,15 +1,15 @@
 #     This file is part of LDV-plotter.
-# 
+#
 #     LDV-plotter is free software: you can redistribute it and/or modify
 #     it under the terms of the GNU General Public License as published by
 #     the Free Software Foundation, either version 3 of the License, or
 #     (at your option) any later version.
-# 
+#
 #     LDV-plotter is distributed in the hope that it will be useful,
 #     but WITHOUT ANY WARRANTY; without even the implied warranty of
 #     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #     GNU General Public License for more details.
-# 
+#
 #     You should have received a copy of the GNU General Public License
 #     along with LDV-plotter.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -56,26 +56,26 @@ class MainLayout(QtWidgets.QGridLayout):
         end = self.right_layout.tools.x_end.value()
         step = float(self.right_layout.tools.x_step.text())
         return (start, end, step)
-    
+
     def reset_ui(self):
         self.right_layout.tools.reset_ui()
         self.clear_plt()
         self.update_canvas()
-        
+
     def update_canvas(self):
         plt.xlabel("x")
         plt.ylabel("y")
         self.matplot_layout.canvas.draw()
-        
-class MatplotLayout(VerticalCostumLayout):   
+
+class MatplotLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.plt_figure = plt.figure()
         self.canvas = FigureCanvas(self.plt_figure)
         self.toolbar = NavigationToolbar(self.canvas, self.parent)
-    
+
     def configure_widgets(self):
         plt.xlabel("x")
-        plt.ylabel("y")  
+        plt.ylabel("y")
 
     def add_widgets(self):
         self.addWidget(self.toolbar)
@@ -86,7 +86,7 @@ class RightLayout(VerticalCostumLayout):
         self.tools = ToolsLayout(self.parent)
         self.funcs = AppFuncsLayout()
         self.plot_button = QtWidgets.QPushButton('Plot')
-    
+
     def configure_widgets(self):
         self.plot_button.clicked.connect(self.parent.plot)
         shortcut = QtWidgets.QShortcut('Return', self.plot_button)
@@ -113,7 +113,7 @@ class AppFuncsLayout(QtWidgets.QVBoxLayout):
     def remove_app_func(self, app_func):
         app_func.delete()
         self.removeWidget(app_func)
-    
+
 class ToolsLayout(QtWidgets.QFormLayout):
     def __init__(self, parent):
         QtWidgets.QFormLayout.__init__(self)
@@ -129,14 +129,14 @@ class ToolsLayout(QtWidgets.QFormLayout):
         self.create_x_end()
         self.create_x_step()
         self.create_points_range()
-    
+
     def create_x_start(self):
         self.x_start = QtWidgets.QDoubleSpinBox()
         self.x_start.setRange(-2147483647, 2147483647)
-        self.x_start.setDecimals(5) 
+        self.x_start.setDecimals(5)
         self.x_start.valueChanged.connect(self.set_num_step)
-        
-    
+
+
     def create_x_end(self):
         self.x_end = QtWidgets.QDoubleSpinBox()
         self.x_end.setRange(-2147483647, 2147483647)
@@ -146,20 +146,19 @@ class ToolsLayout(QtWidgets.QFormLayout):
 
     def create_x_step(self):
         self.x_step = CostumEntry(0.1)
-    
+
     def create_points_range(self):
         self.points_range = QtWidgets.QSpinBox()
         self.points_range.setRange(0, 2147483647)
         self.points_range.setValue(1000)
-        self.points_range.setStyleSheet("height: 40;")  
         self.points_range.valueChanged.connect(self.set_num_step)
-        
+
     def create_x_tools_labels(self):
         self.x_start_label = QtWidgets.QLabel("x starts at")
         self.x_end_label = QtWidgets.QLabel("x ends at")
         self.x_step_label = QtWidgets.QLabel("steps are of")
-        self.points_range_label = QtWidgets.QLabel("set the №\nof points")
-        
+        self.points_range_label = QtWidgets.QLabel("№ of points")
+
 
     def create_new_func_button(self):
         self.new_func_button = QtWidgets.QPushButton('New Func')
@@ -179,19 +178,16 @@ class ToolsLayout(QtWidgets.QFormLayout):
         start = self.x_start.value()
         end = self.x_end.value()
         n_points = self.points_range.value()
-        
+
         if n_points == 0:
             self.points_range.setValue(1)
             return 1
-    
+
         step = (end - start)/n_points
         self.x_step.setValue(step)
-    
+
     def reset_ui(self):
         self.x_start.setValue(0)
         self.x_end.setValue(100)
         self.x_step.setValue(0.1)
         self.points_range.setValue(1000)
-        
-
-
