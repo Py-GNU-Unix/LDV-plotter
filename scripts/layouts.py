@@ -35,6 +35,7 @@ class MainLayout(QtWidgets.QGridLayout):
     def create_widgets(self):
         self.right_layout = RightLayout(self.parent)
         self.matplot_layout = MatplotLayout(self.parent)
+        self.create_ax()
         self.menu = MainMenu(self.parent)
 
     def add_widgets(self):
@@ -49,7 +50,10 @@ class MainLayout(QtWidgets.QGridLayout):
         self.matplot_layout.plt_figure.clear()
 
     def create_ax(self):
-        return self.matplot_layout.plt_figure.add_subplot(111)
+        ax = self.matplot_layout.plt_figure.add_subplot(111)
+        ax.set_facecolor((0,0,0,0))
+
+        return ax
 
     def get_x_range(self):
         start = self.right_layout.tools.x_start.value()
@@ -70,7 +74,9 @@ class MainLayout(QtWidgets.QGridLayout):
 class MatplotLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.plt_figure = plt.figure()
+        self.plt_figure.patch.set_facecolor('None')
         self.canvas = FigureCanvas(self.plt_figure)
+        self.canvas.setStyleSheet("background-color: transparent")
         self.toolbar = NavigationToolbar(self.canvas, self.parent)
 
     def configure_widgets(self):

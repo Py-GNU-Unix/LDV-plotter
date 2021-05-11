@@ -58,18 +58,11 @@ class MainWindow(QtWidgets.QWidget):
 
     def setup_win_style(self):
         self.setup_win_icon()
-        self.setup_palette()
 
     def setup_win_icon(self):
         installationfolder = os.path.dirname(os.path.dirname(__file__))
         icon = QtGui.QIcon(f"{installationfolder}/images/icon.png")
         self.setWindowIcon(icon)
-
-    def setup_palette(self):
-        self.setAutoFillBackground(True)
-        palette = QtGui.QPalette()
-        palette.setColor(self.backgroundRole(), "white");
-        self.setPalette(palette)
 
     def new_file(self):
         self.main_layout.reset_ui()
