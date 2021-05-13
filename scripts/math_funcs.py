@@ -13,6 +13,10 @@
 #     You should have received a copy of the GNU General Public License
 #     along with LDV-plotter.  If not, see <https://www.gnu.org/licenses/>.
 
+# Copyright 2020-present Py-GNU-Unix <py.gnu.unix.moderator@gmail.com>
+
+"A sandboxed commands env"
+
 import math
 
 pow = math.pow
