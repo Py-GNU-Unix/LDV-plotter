@@ -58,6 +58,13 @@ class MainWindow(QtWidgets.QWidget):
 
     def setup_win_style(self):
         self.setup_win_icon()
+        self.setup_palette()
+
+    def setup_palette(self):
+        self.setAutoFillBackground(True)
+        palette = QtGui.QPalette()
+        palette.setColor(self.backgroundRole(), "white");
+        self.setPalette(palette)
 
     def setup_win_icon(self):
         installationfolder = os.path.dirname(os.path.dirname(__file__))
@@ -93,13 +100,41 @@ class MainWindow(QtWidgets.QWidget):
     def parse_file_line(self, line):
         name = line.split("=")[0].strip()
         context = line.split("=")[1].strip()
-        self.create_new_func(name, context)
+        print(line)
+        if name in ("start", "end", "n_points"):
+            self.set_x_range(name, context)
+        else:
+            self.create_new_func(name, context)
 
+    def set_x_range(self, name, context):
+        x_settings = list(self.main_layout.get_x_settings())
+        if name == "start":
+            x_settings[0] = context
+        elif name == "end":
+            x_settings[1] = context
+        elif name == "n_points":
+            x_settings[2] = context
+        else:
+            raise Exception
+        self.main_layout.set_x_settings(x_settings)
+
+            
     def alert_invalid_file(self, line):
         alrt = QtWidgets.QMessageBox()
         alrt.setWindowTitle("Failed to open the file")
         alrt.setText(f"The file is invalid:\n{line}")
         alrt.exec_()
+    
+    def get_x_settings(self):
+        settings = self.main_layout.get_x_settings()
+        names = ("start", "end", "n_points")
+        string = ""
+        i = 0
+        while i < 3:
+            string += names[i]+"="+str(settings[i])+"\n"
+            i+=1
+
+        return string
 
     def save_file(self):
         if not self.filename:
@@ -107,6 +142,7 @@ class MainWindow(QtWidgets.QWidget):
             return 0
 
         context = self.read_app_funcs_context()
+        context += self.get_x_settings()
 
         with open(self.filename, "w") as file:
             file.write(context)

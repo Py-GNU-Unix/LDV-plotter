@@ -50,7 +50,7 @@ class MainLayout(QtWidgets.QGridLayout):
         self.matplot_layout.plt_figure.clear()
 
     def create_ax(self):
-        ax = self.matplot_layout.plt_figure.add_subplot(111)
+        ax = self.matplot_layout.plt_figure.add_subplot()
         ax.set_facecolor((0,0,0,0))
 
         return ax
@@ -60,6 +60,18 @@ class MainLayout(QtWidgets.QGridLayout):
         end = self.right_layout.tools.x_end.value()
         step = float(self.right_layout.tools.x_step.text())
         return (start, end, step)
+
+    def get_x_settings(self):
+        start = self.right_layout.tools.x_start.value()
+        end = self.right_layout.tools.x_end.value()
+        n_points = int(self.right_layout.tools.points_range.text())
+        return (start, end, n_points)   
+
+    def set_x_settings(self, x_settings):
+        self.right_layout.tools.x_start.setValue(float(x_settings[0]))
+        self.right_layout.tools.x_end.setValue(float(x_settings[1]))
+        self.right_layout.tools.points_range.setValue(float(x_settings[2]))
+ 
 
     def reset_ui(self):
         self.right_layout.tools.reset_ui()
@@ -74,9 +86,7 @@ class MainLayout(QtWidgets.QGridLayout):
 class MatplotLayout(VerticalCostumLayout):
     def create_widgets(self):
         self.plt_figure = plt.figure()
-        self.plt_figure.patch.set_facecolor('None')
         self.canvas = FigureCanvas(self.plt_figure)
-        self.canvas.setStyleSheet("background-color: transparent")
         self.toolbar = NavigationToolbar(self.canvas, self.parent)
 
     def configure_widgets(self):
