@@ -1,5 +1,6 @@
 QPushButton::hover{
     color : red;
+    font-weight: bold;
 }
 
 QPushButton::pressed{
@@ -12,4 +13,5 @@ QPushButton{
     color : #444444;
     border : 20px;
     font-size: 12px;
+    font-weight: normal;
 }
