@@ -1,7 +1,7 @@
 # LDV-plotter
 ![GitHub top language](https://img.shields.io/github/languages/top/Py-GNU-Unix/LDV-plotter?color=dark-green&style=flat-square) ![GitHub language count](https://img.shields.io/github/languages/count/Py-GNU-Unix/LDV-plotter?style=flat-square) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/Py-GNU-Unix/LDV-plotter?color=blueviolet&style=flat-square) ![GitHub](https://img.shields.io/github/license/Py-GNU-Unix/oopygame?color=dark-green&style=flat-square) ![GitHub repo size](https://img.shields.io/github/repo-size/Py-GNU-Unix/LDV-plotter?style=flat-square)
 
-This is a mathematics functions plotter. With this tool you can create beautiful plots and get surprised your friends.
+This is a mathematics functions plotter. With this tool you can create beautiful plots and surprise your friends.
 
 ---
 
