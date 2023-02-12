@@ -1,2 +1,2 @@
-matplotlib==3.3.4
-PySide2==5.15.2
+matplotlib
+PySide2
